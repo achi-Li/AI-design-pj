@@ -8,6 +8,7 @@
   |--dataset
   |--result
   |--readme.md
+  |--test.py
 ```
 
 ## Model Architecture
