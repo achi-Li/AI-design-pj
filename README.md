@@ -1,1 +1,0 @@
-# AI-design-pj
