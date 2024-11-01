@@ -1,7 +1,6 @@
 
 import torch
 import torch.nn as nn
-from pyarrow import show_info
 from torch.nn import functional as F
 import math
 
@@ -13,7 +12,7 @@ class myGPTConfig:
     embedding_depth: int = 128
     layer_numbers: int = 4
     head_numbers: int = 4
-    dropout: float = 0.0
+    dropout: float = 0.1
     bias: bool = True
 
 #position embedding with sin and cos
@@ -80,7 +79,7 @@ class myGPT(nn.Module):
         self.config = config
         self.token_embedding_table = nn.Embedding(config.vocab_size,config.embedding_depth)
         self.position_embedding_table = PositionEmbedding(config)
-        self.decoder_blocks = nn.Sequential(*[decoder_layer(config) for _ in range(config.layer_numbers)])
+        self.blocks = nn.Sequential(*[Block(config) for _ in range(config.layer_numbers)])
         self.layer_norm = nn.LayerNorm(config.embedding_depth, bias=config.bias)
         self.final_linear = nn.Linear(config.embedding_depth, config.vocab_size, bias=False)
 
@@ -99,7 +98,7 @@ class myGPT(nn.Module):
         tok_emb = self.token_embedding_table(features) 
         pos_emb = self.position_embedding_table(tok_emb)  
         x = tok_emb + pos_emb   
-        for block in self.decoder_blocks:
+        for block in self.blocks:
             x = block(x)
 
         x = self.layer_norm(x)
@@ -141,7 +140,7 @@ class FeedForward(nn.Module):
         return self.net(x)
 
 
-class decoder_layer(nn.Module):
+class Block(nn.Module):
     def __init__(self,config:myGPTConfig):
         super().__init__()
         self.ln1 = nn.LayerNorm(config.embedding_depth,bias=config.bias)
@@ -151,18 +150,8 @@ class decoder_layer(nn.Module):
 
 
     def forward(self, x):
-        # x = self.ln1(x)
-        x = x + self.attn(self.ln1(x))    #
-        # x = self.ln2(x)
-        # x = x + self.ffn(x)
+        x = x + self.attn(self.ln1(x))
         x = x + self.ffn(self.ln2(x))                                              #
         return x
 
-#def main():
-#    config = myGPTConfig()
-#    Position_embed = PositionEmbedding(config=config)
-#    SelfAttention_my = SelfAttention(config=config)
 
-#if __name__ == '__main__':
-#    main()
-        

@@ -11,7 +11,7 @@ from data_set import load_tokenizer
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 learning_rate = 1e-3
-max_iters = 5000
+max_iters = 50000
 
 train_data = np.memmap('train.dat', dtype=np.int32, mode='r')
 target_data = np.memmap('target.dat', dtype=np.int32, mode='r')
@@ -33,7 +33,7 @@ def train(config:myGPTConfig, model:myGPT):
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
     losses = []
 
-    plt.ion()
+    #plt.ion()
     fig, ax = plt.subplots()
     ax.set_xlabel('Iterations')
     ax.set_ylabel('Loss')
@@ -49,29 +49,32 @@ def train(config:myGPTConfig, model:myGPT):
         logits, loss = model(xb, yb)
         losses.append(loss.item())
 
-        if (iter_num + 1) % 100 == 0:
+        if (iter_num + 1) % 1000 == 0:
             print(f"[train_info] iter:{iter_num + 1:5d}, loss:{loss.item():5.3f}")
 
-            line.set_data(range(len(losses)), losses)
-            ax.relim()
-            ax.autoscale_view()
-            fig.canvas.draw()
-            fig.canvas.flush_events()
+            #line.set_data(range(len(losses)), losses)
+            #ax.relim()
+            #ax.autoscale_view()
+            #fig.canvas.draw()
+            #fig.canvas.flush_events()
 
         loss.backward()
         optimizer.step()
         #pbar.update(1)
 
     #print("train finish")
-    plt.ioff()  # 关闭实时模式
+    #plt.ioff()  # 关闭实时模式
+    line.set_data(range(len(losses)), losses)
+    ax.relim()
+    ax.autoscale_view()
+    fig.canvas.draw()
+    plt.savefig("./loss.jpg")
     #plt.show()  # 显示最终图形
     print(f"final loss: {loss.item()}")
 
 
 def main():
     config = myGPTConfig()
-    config.batch_size = 32
-    config.dropout = 0.1
 
     GPTmodel = myGPT(config).to(device)
     token_model_file = "mydata.model"
