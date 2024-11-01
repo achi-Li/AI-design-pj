@@ -31,7 +31,7 @@ flowchart BT
 	G--Query--->E
 	G--Key-->E
 	G--Value--->E
-    F[Add & Norm]
+    F[Add and Norm]
     E-->F
     G-->F
     H[Linear]
